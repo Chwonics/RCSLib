@@ -54,48 +54,6 @@ AuroraUI.Themes = {
         Warning = Color3.fromRGB(250, 166, 26),
         Error = Color3.fromRGB(237, 66, 69),
         Shadow = Color3.fromRGB(0, 0, 0)
-    },
-    Midnight = {
-        Background = Color3.fromRGB(12, 12, 18),
-        Surface = Color3.fromRGB(18, 18, 24),
-        Primary = Color3.fromRGB(139, 69, 255),
-        Secondary = Color3.fromRGB(99, 102, 241),
-        Accent = Color3.fromRGB(255, 255, 255),
-        Text = Color3.fromRGB(255, 255, 255),
-        TextDark = Color3.fromRGB(160, 160, 170),
-        Border = Color3.fromRGB(35, 35, 45),
-        Success = Color3.fromRGB(52, 211, 153),
-        Warning = Color3.fromRGB(251, 191, 36),
-        Error = Color3.fromRGB(239, 68, 68),
-        Shadow = Color3.fromRGB(0, 0, 0)
-    },
-    Ocean = {
-        Background = Color3.fromRGB(15, 23, 42),
-        Surface = Color3.fromRGB(20, 28, 47),
-        Primary = Color3.fromRGB(14, 165, 233),
-        Secondary = Color3.fromRGB(59, 130, 246),
-        Accent = Color3.fromRGB(255, 255, 255),
-        Text = Color3.fromRGB(248, 250, 252),
-        TextDark = Color3.fromRGB(186, 205, 215),
-        Border = Color3.fromRGB(30, 41, 59),
-        Success = Color3.fromRGB(34, 197, 94),
-        Warning = Color3.fromRGB(245, 158, 11),
-        Error = Color3.fromRGB(239, 68, 68),
-        Shadow = Color3.fromRGB(0, 0, 0)
-    },
-    Sunset = {
-        Background = Color3.fromRGB(30, 20, 25),
-        Surface = Color3.fromRGB(40, 25, 30),
-        Primary = Color3.fromRGB(251, 146, 60),
-        Secondary = Color3.fromRGB(245, 101, 101),
-        Accent = Color3.fromRGB(255, 255, 255),
-        Text = Color3.fromRGB(254, 254, 254),
-        TextDark = Color3.fromRGB(200, 185, 190),
-        Border = Color3.fromRGB(60, 40, 50),
-        Success = Color3.fromRGB(52, 211, 153),
-        Warning = Color3.fromRGB(251, 191, 36),
-        Error = Color3.fromRGB(248, 113, 113),
-        Shadow = Color3.fromRGB(0, 0, 0)
     }
 }
 
@@ -118,35 +76,6 @@ local function CreateStroke(color, thickness, transparency)
         Thickness = thickness or 1,
         Transparency = transparency or 0
     })
-end
-
-local function CreateGradient(colors, rotation, transparency)
-    local gradient = CreateInstance("UIGradient", {
-        Rotation = rotation or 0
-    })
-    if colors then
-        gradient.Color = ColorSequence.new(colors)
-    end
-    if transparency then
-        gradient.Transparency = NumberSequence.new(transparency)
-    end
-    return gradient
-end
-
-local function CreateShadow(parent, size, intensity)
-    local shadow = CreateInstance("ImageLabel", {
-        Parent = parent,
-        BackgroundTransparency = 1,
-        Image = "rbxassetid://8992230677",
-        ImageColor3 = Color3.new(0, 0, 0),
-        ImageTransparency = intensity or 0.7,
-        Position = UDim2.new(0, -size, 0, -size),
-        Size = UDim2.new(1, size * 2, 1, size * 2),
-        ZIndex = parent.ZIndex - 1,
-        ScaleType = Enum.ScaleType.Slice,
-        SliceCenter = Rect.new(99, 99, 99, 99)
-    })
-    return shadow
 end
 
 -- Animation Presets
@@ -189,8 +118,7 @@ function AuroraUI.Notify(config)
     local title = config.Title or "Notification"
     local message = config.Content or "No message provided"
     local duration = config.Duration or 4
-    local image = config.Image
-    local theme = config.Theme or AuroraUI.Themes.Default
+    local theme = AuroraUI.Themes.Default
     
     local notification = CreateInstance("Frame", {
         Parent = NotificationContainer,
@@ -203,14 +131,6 @@ function AuroraUI.Notify(config)
     
     CreateCorner(12).Parent = notification
     CreateStroke(theme.Border, 1, 0.3).Parent = notification
-    CreateShadow(notification, 15, 0.6)
-    
-    -- Gradient overlay
-    local gradient = CreateGradient({
-        theme.Surface,
-        theme.Surface:lerp(theme.Primary, 0.05)
-    }, 45)
-    gradient.Parent = notification
     
     -- Icon
     local iconFrame = CreateInstance("Frame", {
@@ -222,20 +142,16 @@ function AuroraUI.Notify(config)
     })
     CreateCorner(8).Parent = iconFrame
     
-    local iconGradient = CreateGradient({
-        theme.Primary,
-        theme.Secondary
-    }, 45)
-    iconGradient.Parent = iconFrame
-    
-    local icon = CreateInstance("ImageLabel", {
+    local icon = CreateInstance("TextLabel", {
         Parent = iconFrame,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0.5, -8, 0.5, -8),
-        Size = UDim2.new(0, 16, 0, 16),
-        Image = image or "rbxassetid://3926305904",
-        ImageColor3 = Color3.new(1, 1, 1),
-        ScaleType = Enum.ScaleType.Fit
+        Size = UDim2.new(1, 0, 1, 0),
+        Font = Enum.Font.GothamBold,
+        Text = "!",
+        TextColor3 = Color3.new(1, 1, 1),
+        TextSize = 18,
+        TextXAlignment = Enum.TextXAlignment.Center,
+        TextYAlignment = Enum.TextYAlignment.Center
     })
     
     -- Title
@@ -291,23 +207,11 @@ function AuroraUI.Notify(config)
             BackgroundTransparency = 1
         }):Play()
         
-        CreateTween(titleLabel, AnimationPresets.Fast, {TextTransparency = 1}):Play()
-        CreateTween(messageLabel, AnimationPresets.Fast, {TextTransparency = 1}):Play()
-        CreateTween(closeButton, AnimationPresets.Fast, {TextTransparency = 1}):Play()
-        CreateTween(iconFrame, AnimationPresets.Fast, {BackgroundTransparency = 1}):Play()
-        CreateTween(icon, AnimationPresets.Fast, {ImageTransparency = 1}):Play()
-        
         task.wait(0.25)
         notification:Destroy()
     end
     
     closeButton.MouseButton1Click:Connect(closeNotification)
-    closeButton.MouseEnter:Connect(function()
-        CreateTween(closeButton, AnimationPresets.Fast, {TextColor3 = theme.Error}):Play()
-    end)
-    closeButton.MouseLeave:Connect(function()
-        CreateTween(closeButton, AnimationPresets.Fast, {TextColor3 = theme.TextDark}):Play()
-    end)
     
     task.spawn(function()
         task.wait(duration)
@@ -321,10 +225,8 @@ end
 function AuroraUI.CreateWindow(config)
     config = config or {}
     local title = config.Name or "Aurora UI"
-    local subtitle = config.LoadingTitle or ""
     local size = config.Size or UDim2.new(0, 580, 0, 460)
-    local theme = config.Theme or AuroraUI.Themes.Default
-    local configFolder = config.ConfigurationSaving
+    local theme = AuroraUI.Themes.Default
     
     -- Create main screen gui
     local screenGui = CreateInstance("ScreenGui", {
@@ -345,14 +247,6 @@ function AuroraUI.CreateWindow(config)
     })
     CreateCorner(16).Parent = window
     CreateStroke(theme.Border, 1, 0.5).Parent = window
-    CreateShadow(window, 20, 0.7)
-    
-    -- Background gradient
-    local bgGradient = CreateGradient({
-        theme.Background,
-        theme.Background:lerp(theme.Surface, 0.3)
-    }, 135)
-    bgGradient.Parent = window
     
     -- Top bar
     local topBar = CreateInstance("Frame", {
@@ -364,14 +258,7 @@ function AuroraUI.CreateWindow(config)
     })
     CreateCorner(16).Parent = topBar
     
-    -- Top bar gradient
-    local topBarGradient = CreateGradient({
-        theme.Surface,
-        theme.Surface:lerp(theme.Primary, 0.08)
-    }, 90)
-    topBarGradient.Parent = topBar
-    
-    -- Fix corners
+    -- Fix corners for top bar
     local topBarFix = CreateInstance("Frame", {
         Parent = topBar,
         BackgroundColor3 = theme.Surface,
@@ -379,7 +266,6 @@ function AuroraUI.CreateWindow(config)
         Size = UDim2.new(1, 0, 0, 16),
         BorderSizePixel = 0
     })
-    topBarGradient:Clone().Parent = topBarFix
     
     -- Title
     local titleLabel = CreateInstance("TextLabel", {
@@ -395,62 +281,21 @@ function AuroraUI.CreateWindow(config)
         TextYAlignment = Enum.TextYAlignment.Center
     })
     
-    -- Control buttons
-    local controls = CreateInstance("Frame", {
+    -- Close button
+    local closeButton = CreateInstance("TextButton", {
         Parent = topBar,
-        BackgroundTransparency = 1,
-        Position = UDim2.new(1, -80, 0, 10),
-        Size = UDim2.new(0, 70, 0, 30)
+        BackgroundColor3 = theme.Error,
+        Position = UDim2.new(1, -40, 0, 10),
+        Size = UDim2.new(0, 30, 0, 30),
+        Font = Enum.Font.GothamBold,
+        Text = "×",
+        TextColor3 = Color3.new(1, 1, 1),
+        TextSize = 16,
+        BorderSizePixel = 0
     })
+    CreateCorner(6).Parent = closeButton
     
-    local function createControlButton(icon, color, position, callback)
-        local button = CreateInstance("TextButton", {
-            Parent = controls,
-            BackgroundColor3 = color,
-            Position = position,
-            Size = UDim2.new(0, 28, 0, 28),
-            Font = Enum.Font.GothamBold,
-            Text = icon,
-            TextColor3 = Color3.new(1, 1, 1),
-            TextSize = 14,
-            BorderSizePixel = 0
-        })
-        CreateCorner(6).Parent = button
-        
-        local gradient = CreateGradient({color, color:lerp(Color3.new(1, 1, 1), 0.1)}, 45)
-        gradient.Parent = button
-        
-        button.MouseEnter:Connect(function()
-            CreateTween(button, AnimationPresets.Fast, {Size = UDim2.new(0, 30, 0, 30)}):Play()
-        end)
-        
-        button.MouseLeave:Connect(function()
-            CreateTween(button, AnimationPresets.Fast, {Size = UDim2.new(0, 28, 0, 28)}):Play()
-        end)
-        
-        button.MouseButton1Click:Connect(callback)
-        return button
-    end
-    
-    local minimized = false
-    local originalSize = size
-    
-    createControlButton("−", theme.Warning, UDim2.new(0, 0, 0, 1), function()
-        minimized = not minimized
-        if minimized then
-            CreateTween(window, AnimationPresets.Medium, {Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset, 0, 50)}):Play()
-        else
-            CreateTween(window, AnimationPresets.Medium, {Size = originalSize}):Play()
-        end
-    end)
-    
-    createControlButton("×", theme.Error, UDim2.new(0, 36, 0, 1), function()
-        CreateTween(window, AnimationPresets.Medium, {
-            Size = UDim2.new(0, 0, 0, 0),
-            Position = UDim2.new(0.5, 0, 0.5, 0),
-            BackgroundTransparency = 1
-        }):Play()
-        task.wait(0.4)
+    closeButton.MouseButton1Click:Connect(function()
         screenGui:Destroy()
     end)
     
@@ -481,12 +326,6 @@ function AuroraUI.CreateWindow(config)
     })
     CreateCorner(12).Parent = contentFrame
     CreateStroke(theme.Border, 1, 0.3).Parent = contentFrame
-    
-    local contentGradient = CreateGradient({
-        theme.Surface,
-        theme.Surface:lerp(theme.Background, 0.1)
-    }, 180)
-    contentGradient.Parent = contentFrame
     
     -- Make draggable
     local dragging = false
@@ -528,7 +367,6 @@ function AuroraUI.CreateWindow(config)
     function WindowObject:CreateTab(config)
         config = config or {}
         local name = config.Name or "Tab"
-        local icon = config.Icon
         
         local tabButton = CreateInstance("TextButton", {
             Parent = tabContainer,
@@ -536,7 +374,7 @@ function AuroraUI.CreateWindow(config)
             Size = UDim2.new(1, 0, 0, 35),
             BorderSizePixel = 0,
             Font = Enum.Font.Gotham,
-            Text = "",
+            Text = name,
             TextColor3 = theme.TextDark,
             TextSize = 13,
             LayoutOrder = #tabContainer:GetChildren()
@@ -579,69 +417,18 @@ function AuroraUI.CreateWindow(config)
             PaddingRight = UDim.new(0, 15)
         })
         
-        -- Tab icon and text
-        if icon then
-            local tabIcon = CreateInstance("ImageLabel", {
-                Parent = tabButton,
-                BackgroundTransparency = 1,
-                Position = UDim2.new(0, 8, 0.5, -8),
-                Size = UDim2.new(0, 16, 0, 16),
-                Image = icon,
-                ImageColor3 = theme.TextDark
-            })
-            
-            local tabLabel = CreateInstance("TextLabel", {
-                Parent = tabButton,
-                BackgroundTransparency = 1,
-                Position = UDim2.new(0, 30, 0, 0),
-                Size = UDim2.new(1, -35, 1, 0),
-                Font = Enum.Font.Gotham,
-                Text = name,
-                TextColor3 = theme.TextDark,
-                TextSize = 13,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                TextYAlignment = Enum.TextYAlignment.Center
-            })
-        else
-            local tabLabel = CreateInstance("TextLabel", {
-                Parent = tabButton,
-                BackgroundTransparency = 1,
-                Size = UDim2.new(1, 0, 1, 0),
-                Font = Enum.Font.Gotham,
-                Text = name,
-                TextColor3 = theme.TextDark,
-                TextSize = 13,
-                TextXAlignment = Enum.TextXAlignment.Center,
-                TextYAlignment = Enum.TextYAlignment.Center
-            })
-        end
-        
         local function selectTab()
             -- Deselect all tabs
             for _, tab in pairs(WindowObject.Tabs) do
                 tab.Content.Visible = false
                 CreateTween(tab.Button, AnimationPresets.Fast, {BackgroundColor3 = theme.Surface}):Play()
-                
-                for _, child in pairs(tab.Button:GetChildren()) do
-                    if child:IsA("TextLabel") then
-                        CreateTween(child, AnimationPresets.Fast, {TextColor3 = theme.TextDark}):Play()
-                    elseif child:IsA("ImageLabel") then
-                        CreateTween(child, AnimationPresets.Fast, {ImageColor3 = theme.TextDark}):Play()
-                    end
-                end
+                CreateTween(tab.Button, AnimationPresets.Fast, {TextColor3 = theme.TextDark}):Play()
             end
             
             -- Select this tab
             tabContent.Visible = true
             CreateTween(tabButton, AnimationPresets.Fast, {BackgroundColor3 = theme.Primary}):Play()
-            
-            for _, child in pairs(tabButton:GetChildren()) do
-                if child:IsA("TextLabel") then
-                    CreateTween(child, AnimationPresets.Fast, {TextColor3 = Color3.new(1, 1, 1)}):Play()
-                elseif child:IsA("ImageLabel") then
-                    CreateTween(child, AnimationPresets.Fast, {ImageColor3 = Color3.new(1, 1, 1)}):Play()
-                end
-            end
+            CreateTween(tabButton, AnimationPresets.Fast, {TextColor3 = Color3.new(1, 1, 1)}):Play()
             
             WindowObject.ActiveTab = name
         end
@@ -667,12 +454,6 @@ function AuroraUI.CreateWindow(config)
             })
             CreateCorner(10).Parent = section
             CreateStroke(theme.Border, 1, 0.5).Parent = section
-            
-            local sectionGradient = CreateGradient({
-                theme.Surface,
-                theme.Surface:lerp(theme.Primary, 0.03)
-            }, 45)
-            sectionGradient.Parent = section
             
             if sectionName then
                 local sectionTitle = CreateInstance("TextLabel", {
@@ -736,22 +517,14 @@ function AuroraUI.CreateWindow(config)
                 })
                 CreateCorner(8).Parent = button
                 
-                local buttonGradient = CreateGradient({
-                    theme.Primary,
-                    theme.Secondary
-                }, 45)
-                buttonGradient.Parent = button
-                
                 button.MouseEnter:Connect(function()
                     CreateTween(button, AnimationPresets.Fast, {
-                        Size = UDim2.new(1, 0, 0, 40),
                         BackgroundColor3 = theme.Primary:lerp(Color3.new(1, 1, 1), 0.1)
                     }):Play()
                 end)
                 
                 button.MouseLeave:Connect(function()
                     CreateTween(button, AnimationPresets.Fast, {
-                        Size = UDim2.new(1, 0, 0, 38),
                         BackgroundColor3 = theme.Primary
                     }):Play()
                 end)
@@ -765,15 +538,7 @@ function AuroraUI.CreateWindow(config)
                         BackgroundColor3 = theme.Primary
                     }):Play()
                     
-                    local success, result = pcall(callback)
-                    if not success then
-                        AuroraUI.Notify({
-                            Title = "Error",
-                            Content = "Button callback failed: " .. tostring(result),
-                            Duration = 4,
-                            Theme = theme
-                        })
-                    end
+                    pcall(callback)
                 end)
                 
                 return button
@@ -784,7 +549,6 @@ function AuroraUI.CreateWindow(config)
                 local name = config.Name or "Toggle"
                 local default = config.CurrentValue or false
                 local callback = config.Callback or function() end
-                local flag = config.Flag
                 
                 local container = CreateInstance("Frame", {
                     Parent = sectionContent,
@@ -826,7 +590,6 @@ function AuroraUI.CreateWindow(config)
                     BorderSizePixel = 0
                 })
                 CreateCorner(10).Parent = toggleKnob
-                CreateShadow(toggleKnob, 4, 0.5)
                 
                 local enabled = default
                 
@@ -841,31 +604,7 @@ function AuroraUI.CreateWindow(config)
                         Position = enabled and UDim2.new(1, -22, 0.5, -10) or UDim2.new(0, 2, 0.5, -10)
                     }):Play()
                     
-                    local success, result = pcall(callback, enabled)
-                    if not success then
-                        AuroraUI.Notify({
-                            Title = "Error",
-                            Content = "Toggle callback failed: " .. tostring(result),
-                            Duration = 4,
-                            Theme = theme
-                        })
-                    end
-                    
-                    if flag then
-                        AuroraUI.Flags[flag] = {CurrentValue = enabled, Set = function(value) updateToggleValue(value) end}
-                    end
-                end
-                
-                local function updateToggleValue(value)
-                    enabled = value
-                    
-                    CreateTween(toggleFrame, AnimationPresets.Fast, {
-                        BackgroundColor3 = enabled and theme.Success or theme.Border
-                    }):Play()
-                    
-                    CreateTween(toggleKnob, AnimationPresets.Medium, {
-                        Position = enabled and UDim2.new(1, -22, 0.5, -10) or UDim2.new(0, 2, 0.5, -10)
-                    }):Play()
+                    pcall(callback, enabled)
                 end
                 
                 local button = CreateInstance("TextButton", {
@@ -877,408 +616,17 @@ function AuroraUI.CreateWindow(config)
                 
                 button.MouseButton1Click:Connect(updateToggle)
                 
-                container.MouseEnter:Connect(function()
-                    CreateTween(container, AnimationPresets.Fast, {BackgroundColor3 = theme.Surface}):Play()
-                end)
-                
-                container.MouseLeave:Connect(function()
-                    CreateTween(container, AnimationPresets.Fast, {BackgroundColor3 = theme.Background}):Play()
-                end)
-                
-                if flag then
-                    AuroraUI.Flags[flag] = {CurrentValue = enabled, Set = updateToggleValue}
-                end
-                
                 return {
-                    SetValue = updateToggleValue,
+                    SetValue = function(value)
+                        enabled = value
+                        CreateTween(toggleFrame, AnimationPresets.Fast, {
+                            BackgroundColor3 = enabled and theme.Success or theme.Border
+                        }):Play()
+                        CreateTween(toggleKnob, AnimationPresets.Medium, {
+                            Position = enabled and UDim2.new(1, -22, 0.5, -10) or UDim2.new(0, 2, 0.5, -10)
+                        }):Play()
+                    end,
                     GetValue = function() return enabled end
-                }
-            end
-            
-            function SectionObject:CreateSlider(config)
-                config = config or {}
-                local name = config.Name or "Slider"
-                local min = config.Range and config.Range[1] or 0
-                local max = config.Range and config.Range[2] or 100
-                local default = config.CurrentValue or min
-                local suffix = config.Suffix or ""
-                local callback = config.Callback or function() end
-                local flag = config.Flag
-                
-                local container = CreateInstance("Frame", {
-                    Parent = sectionContent,
-                    BackgroundColor3 = theme.Background,
-                    Size = UDim2.new(1, 0, 0, 58),
-                    BorderSizePixel = 0,
-                    LayoutOrder = #sectionContent:GetChildren()
-                })
-                CreateCorner(8).Parent = container
-                CreateStroke(theme.Border, 1, 0.6).Parent = container
-                
-                local label = CreateInstance("TextLabel", {
-                    Parent = container,
-                    BackgroundTransparency = 1,
-                    Position = UDim2.new(0, 15, 0, 8),
-                    Size = UDim2.new(1, -80, 0, 18),
-                    Font = Enum.Font.Gotham,
-                    Text = name,
-                    TextColor3 = theme.Text,
-                    TextSize = 14,
-                    TextXAlignment = Enum.TextXAlignment.Left
-                })
-                
-                local valueLabel = CreateInstance("TextLabel", {
-                    Parent = container,
-                    BackgroundTransparency = 1,
-                    Position = UDim2.new(1, -70, 0, 8),
-                    Size = UDim2.new(0, 55, 0, 18),
-                    Font = Enum.Font.GothamBold,
-                    Text = tostring(default) .. suffix,
-                    TextColor3 = theme.Primary,
-                    TextSize = 13,
-                    TextXAlignment = Enum.TextXAlignment.Right
-                })
-                
-                local sliderFrame = CreateInstance("Frame", {
-                    Parent = container,
-                    BackgroundColor3 = theme.Border,
-                    Position = UDim2.new(0, 15, 0, 35),
-                    Size = UDim2.new(1, -30, 0, 6),
-                    BorderSizePixel = 0
-                })
-                CreateCorner(3).Parent = sliderFrame
-                
-                local sliderFill = CreateInstance("Frame", {
-                    Parent = sliderFrame,
-                    BackgroundColor3 = theme.Primary,
-                    Size = UDim2.new((default - min) / (max - min), 0, 1, 0),
-                    BorderSizePixel = 0
-                })
-                CreateCorner(3).Parent = sliderFill
-                
-                local fillGradient = CreateGradient({
-                    theme.Primary,
-                    theme.Secondary
-                }, 0)
-                fillGradient.Parent = sliderFill
-                
-                local sliderKnob = CreateInstance("Frame", {
-                    Parent = sliderFrame,
-                    BackgroundColor3 = Color3.new(1, 1, 1),
-                    Position = UDim2.new((default - min) / (max - min), -8, 0.5, -8),
-                    Size = UDim2.new(0, 16, 0, 16),
-                    BorderSizePixel = 0
-                })
-                CreateCorner(8).Parent = sliderKnob
-                CreateStroke(theme.Primary, 2).Parent = sliderKnob
-                CreateShadow(sliderKnob, 4, 0.6)
-                
-                local currentValue = default
-                local dragging = false
-                
-                local function updateSlider(value)
-                    currentValue = math.clamp(value, min, max)
-                    local percent = (currentValue - min) / (max - min)
-                    
-                    CreateTween(sliderFill, AnimationPresets.Fast, {Size = UDim2.new(percent, 0, 1, 0)}):Play()
-                    CreateTween(sliderKnob, AnimationPresets.Fast, {Position = UDim2.new(percent, -8, 0.5, -8)}):Play()
-                    
-                    valueLabel.Text = tostring(math.floor(currentValue + 0.5)) .. suffix
-                    
-                    local success, result = pcall(callback, currentValue)
-                    if not success then
-                        AuroraUI.Notify({
-                            Title = "Error",
-                            Content = "Slider callback failed: " .. tostring(result),
-                            Duration = 4,
-                            Theme = theme
-                        })
-                    end
-                    
-                    if flag then
-                        AuroraUI.Flags[flag] = {CurrentValue = currentValue, Set = function(value) updateSlider(value) end}
-                    end
-                end
-                
-                sliderFrame.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        dragging = true
-                        local percent = math.clamp((Mouse.X - sliderFrame.AbsolutePosition.X) / sliderFrame.AbsoluteSize.X, 0, 1)
-                        updateSlider(min + (max - min) * percent)
-                    end
-                end)
-                
-                UserInputService.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        dragging = false
-                    end
-                end)
-                
-                UserInputService.InputChanged:Connect(function(input)
-                    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-                        local percent = math.clamp((Mouse.X - sliderFrame.AbsolutePosition.X) / sliderFrame.AbsoluteSize.X, 0, 1)
-                        updateSlider(min + (max - min) * percent)
-                    end
-                end)
-                
-                container.MouseEnter:Connect(function()
-                    CreateTween(container, AnimationPresets.Fast, {BackgroundColor3 = theme.Surface}):Play()
-                    CreateTween(sliderKnob, AnimationPresets.Fast, {Size = UDim2.new(0, 18, 0, 18)}):Play()
-                end)
-                
-                container.MouseLeave:Connect(function()
-                    CreateTween(container, AnimationPresets.Fast, {BackgroundColor3 = theme.Background}):Play()
-                    if not dragging then
-                        CreateTween(sliderKnob, AnimationPresets.Fast, {Size = UDim2.new(0, 16, 0, 16)}):Play()
-                    end
-                end)
-                
-                if flag then
-                    AuroraUI.Flags[flag] = {CurrentValue = currentValue, Set = updateSlider}
-                end
-                
-                return {
-                    SetValue = updateSlider,
-                    GetValue = function() return currentValue end
-                }
-            end
-            
-            function SectionObject:CreateDropdown(config)
-                config = config or {}
-                local name = config.Name or "Dropdown"
-                local options = config.Options or {"Option 1", "Option 2"}
-                local default = config.CurrentOption or options[1]
-                local callback = config.Callback or function() end
-                local flag = config.Flag
-                
-                local container = CreateInstance("Frame", {
-                    Parent = sectionContent,
-                    BackgroundColor3 = theme.Background,
-                    Size = UDim2.new(1, 0, 0, 42),
-                    BorderSizePixel = 0,
-                    LayoutOrder = #sectionContent:GetChildren()
-                })
-                CreateCorner(8).Parent = container
-                CreateStroke(theme.Border, 1, 0.6).Parent = container
-                
-                local label = CreateInstance("TextLabel", {
-                    Parent = container,
-                    BackgroundTransparency = 1,
-                    Position = UDim2.new(0, 15, 0, 0),
-                    Size = UDim2.new(0.6, 0, 1, 0),
-                    Font = Enum.Font.Gotham,
-                    Text = name,
-                    TextColor3 = theme.Text,
-                    TextSize = 14,
-                    TextXAlignment = Enum.TextXAlignment.Left,
-                    TextYAlignment = Enum.TextYAlignment.Center
-                })
-                
-                local dropdown = CreateInstance("TextButton", {
-                    Parent = container,
-                    BackgroundColor3 = theme.Surface,
-                    Position = UDim2.new(0.6, 5, 0.5, -12),
-                    Size = UDim2.new(0.4, -20, 0, 24),
-                    BorderSizePixel = 0,
-                    Font = Enum.Font.Gotham,
-                    Text = default,
-                    TextColor3 = theme.Text,
-                    TextSize = 12,
-                    TextTruncate = Enum.TextTruncate.AtEnd
-                })
-                CreateCorner(6).Parent = dropdown
-                CreateStroke(theme.Border, 1, 0.8).Parent = dropdown
-                
-                CreateInstance("UIPadding", {
-                    Parent = dropdown,
-                    PaddingLeft = UDim.new(0, 8),
-                    PaddingRight = UDim.new(0, 20)
-                })
-                
-                local arrow = CreateInstance("TextLabel", {
-                    Parent = dropdown,
-                    BackgroundTransparency = 1,
-                    Position = UDim2.new(1, -18, 0.5, -6),
-                    Size = UDim2.new(0, 12, 0, 12),
-                    Font = Enum.Font.GothamBold,
-                    Text = "▼",
-                    TextColor3 = theme.TextDark,
-                    TextSize = 8,
-                    TextXAlignment = Enum.TextXAlignment.Center
-                })
-                
-                local optionsFrame = CreateInstance("Frame", {
-                    Parent = container,
-                    BackgroundColor3 = theme.Surface,
-                    Position = UDim2.new(0.6, 5, 1, 5),
-                    Size = UDim2.new(0.4, -20, 0, 0),
-                    BorderSizePixel = 0,
-                    Visible = false,
-                    ZIndex = 200
-                })
-                CreateCorner(6).Parent = optionsFrame
-                CreateStroke(theme.Border, 1, 0.5).Parent = optionsFrame
-                CreateShadow(optionsFrame, 8, 0.7)
-                
-                local optionsLayout = CreateInstance("UIListLayout", {
-                    Parent = optionsFrame,
-                    FillDirection = Enum.FillDirection.Vertical,
-                    SortOrder = Enum.SortOrder.LayoutOrder
-                })
-                
-                local isOpen = false
-                local selectedValue = default
-                
-                for i, option in ipairs(options) do
-                    local optionButton = CreateInstance("TextButton", {
-                        Parent = optionsFrame,
-                        BackgroundColor3 = Color3.new(0, 0, 0),
-                        BackgroundTransparency = 1,
-                        Size = UDim2.new(1, 0, 0, 28),
-                        Font = Enum.Font.Gotham,
-                        Text = option,
-                        TextColor3 = theme.Text,
-                        TextSize = 12,
-                        TextXAlignment = Enum.TextXAlignment.Left,
-                        BorderSizePixel = 0,
-                        LayoutOrder = i
-                    })
-                    
-                    CreateInstance("UIPadding", {
-                        Parent = optionButton,
-                        PaddingLeft = UDim.new(0, 8)
-                    })
-                    
-                    optionButton.MouseEnter:Connect(function()
-                        CreateTween(optionButton, AnimationPresets.Fast, {BackgroundTransparency = 0.9}):Play()
-                        CreateTween(optionButton, AnimationPresets.Fast, {BackgroundColor3 = theme.Primary}):Play()
-                    end)
-                    
-                    optionButton.MouseLeave:Connect(function()
-                        CreateTween(optionButton, AnimationPresets.Fast, {BackgroundTransparency = 1}):Play()
-                    end)
-                    
-                    optionButton.MouseButton1Click:Connect(function()
-                        selectedValue = option
-                        dropdown.Text = option
-                        
-                        local success, result = pcall(callback, selectedValue)
-                        if not success then
-                            AuroraUI.Notify({
-                                Title = "Error",
-                                Content = "Dropdown callback failed: " .. tostring(result),
-                                Duration = 4,
-                                Theme = theme
-                            })
-                        end
-                        
-                        if flag then
-                            AuroraUI.Flags[flag] = {CurrentOption = selectedValue, Set = function(value) updateDropdownValue(value) end}
-                        end
-                        
-                        -- Close dropdown
-                        isOpen = false
-                        CreateTween(optionsFrame, AnimationPresets.Fast, {Size = UDim2.new(0.4, -20, 0, 0)}):Play()
-                        CreateTween(arrow, AnimationPresets.Fast, {Rotation = 0}):Play()
-                        task.wait(0.15)
-                        optionsFrame.Visible = false
-                        container.Size = UDim2.new(1, 0, 0, 42)
-                    end)
-                end
-                
-                local function updateDropdownValue(value)
-                    if table.find(options, value) then
-                        selectedValue = value
-                        dropdown.Text = value
-                    end
-                end
-                
-                dropdown.MouseButton1Click:Connect(function()
-                    isOpen = not isOpen
-                    if isOpen then
-                        optionsFrame.Visible = true
-                        container.Size = UDim2.new(1, 0, 0, 42 + #options * 28 + 10)
-                        CreateTween(optionsFrame, AnimationPresets.Fast, {Size = UDim2.new(0.4, -20, 0, #options * 28)}):Play()
-                        CreateTween(arrow, AnimationPresets.Fast, {Rotation = 180}):Play()
-                    else
-                        CreateTween(optionsFrame, AnimationPresets.Fast, {Size = UDim2.new(0.4, -20, 0, 0)}):Play()
-                        CreateTween(arrow, AnimationPresets.Fast, {Rotation = 0}):Play()
-                        task.wait(0.15)
-                        optionsFrame.Visible = false
-                        container.Size = UDim2.new(1, 0, 0, 42)
-                    end
-                end)
-                
-                container.MouseEnter:Connect(function()
-                    CreateTween(container, AnimationPresets.Fast, {BackgroundColor3 = theme.Surface}):Play()
-                end)
-                
-                container.MouseLeave:Connect(function()
-                    CreateTween(container, AnimationPresets.Fast, {BackgroundColor3 = theme.Background}):Play()
-                end)
-                
-                if flag then
-                    AuroraUI.Flags[flag] = {CurrentOption = selectedValue, Set = updateDropdownValue}
-                end
-                
-                return {
-                    SetValue = updateDropdownValue,
-                    GetValue = function() return selectedValue end,
-                    Refresh = function(newOptions)
-                        options = newOptions
-                        for _, child in ipairs(optionsFrame:GetChildren()) do
-                            if child:IsA("TextButton") then
-                                child:Destroy()
-                            end
-                        end
-                        -- Recreate options with new list
-                        for i, option in ipairs(newOptions) do
-                            local optionButton = CreateInstance("TextButton", {
-                                Parent = optionsFrame,
-                                BackgroundColor3 = Color3.new(0, 0, 0),
-                                BackgroundTransparency = 1,
-                                Size = UDim2.new(1, 0, 0, 28),
-                                Font = Enum.Font.Gotham,
-                                Text = option,
-                                TextColor3 = theme.Text,
-                                TextSize = 12,
-                                TextXAlignment = Enum.TextXAlignment.Left,
-                                BorderSizePixel = 0,
-                                LayoutOrder = i
-                            })
-                            
-                            CreateInstance("UIPadding", {
-                                Parent = optionButton,
-                                PaddingLeft = UDim.new(0, 8)
-                            })
-                            
-                            optionButton.MouseEnter:Connect(function()
-                                CreateTween(optionButton, AnimationPresets.Fast, {BackgroundTransparency = 0.9}):Play()
-                                CreateTween(optionButton, AnimationPresets.Fast, {BackgroundColor3 = theme.Primary}):Play()
-                            end)
-                            
-                            optionButton.MouseLeave:Connect(function()
-                                CreateTween(optionButton, AnimationPresets.Fast, {BackgroundTransparency = 1}):Play()
-                            end)
-                            
-                            optionButton.MouseButton1Click:Connect(function()
-                                selectedValue = option
-                                dropdown.Text = option
-                                callback(selectedValue)
-                                
-                                if flag then
-                                    AuroraUI.Flags[flag] = {CurrentOption = selectedValue, Set = updateDropdownValue}
-                                end
-                                
-                                isOpen = false
-                                CreateTween(optionsFrame, AnimationPresets.Fast, {Size = UDim2.new(0.4, -20, 0, 0)}):Play()
-                                CreateTween(arrow, AnimationPresets.Fast, {Rotation = 0}):Play()
-                                task.wait(0.15)
-                                optionsFrame.Visible = false
-                                container.Size = UDim2.new(1, 0, 0, 42)
-                            end)
-                        end
-                    end
                 }
             end
             
@@ -1301,7 +649,7 @@ function AuroraUI.CreateWindow(config)
                         label.Text = newText
                     end
                 }
-            end
+            endhttps://github.com/Chwonics/RCSLib/blob/main/loader
             
             return SectionObject
         end
@@ -1316,473 +664,20 @@ function AuroraUI.CreateWindow(config)
         return TabObject
     end
     
-    function WindowObject:SetTheme(newTheme)
-        theme = newTheme
-        WindowObject.Theme = theme
-        
-        -- Update all window colors
-        window.BackgroundColor3 = theme.Background
-        topBar.BackgroundColor3 = theme.Surface
-        topBarFix.BackgroundColor3 = theme.Surface
-        titleLabel.TextColor3 = theme.Text
-        contentFrame.BackgroundColor3 = theme.Surface
-        
-        -- Update gradients
-        for _, obj in pairs(window:GetDescendants()) do
-            if obj:IsA("UIGradient") then
-                if obj.Parent == window then
-                    obj.Color = ColorSequence.new({
-                        theme.Background,
-                        theme.Background:lerp(theme.Surface, 0.3)
-                    })
-                elseif obj.Parent == topBar or obj.Parent == topBarFix then
-                    obj.Color = ColorSequence.new({
-                        theme.Surface,
-                        theme.Surface:lerp(theme.Primary, 0.08)
-                    })
-                elseif obj.Parent == contentFrame then
-                    obj.Color = ColorSequence.new({
-                        theme.Surface,
-                        theme.Surface:lerp(theme.Background, 0.1)
-                    })
-                end
-            elseif obj:IsA("UIStroke") then
-                obj.Color = theme.Border
-            end
-        end
-    end
-    
     function WindowObject:Destroy()
-        CreateTween(window, AnimationPresets.Medium, {
-            Size = UDim2.new(0, 0, 0, 0),
-            Position = UDim2.new(0.5, 0, 0.5, 0),
-            BackgroundTransparency = 1
-        }):Play()
-        task.wait(0.4)
         screenGui:Destroy()
-    end
-    
-    -- Configuration saving
-    if configFolder and configFolder.Enabled then
-        function WindowObject:LoadConfiguration()
-            if not isfile or not readfile then return end
-            
-            local fileName = configFolder.FileName or "config"
-            local folderName = configFolder.FolderName or "AuroraUI"
-            
-            if isfile(folderName .. "/" .. fileName .. ".json") then
-                local success, result = pcall(function()
-                    local content = readfile(folderName .. "/" .. fileName .. ".json")
-                    local data = HttpService:JSONDecode(content)
-                    
-                    for flag, flagData in pairs(data) do
-                        if AuroraUI.Flags[flag] then
-                            if flagData.Type == "Toggle" then
-                                AuroraUI.Flags[flag]:Set(flagData.Value)
-                            elseif flagData.Type == "Slider" then
-                                AuroraUI.Flags[flag]:Set(flagData.Value)
-                            elseif flagData.Type == "Dropdown" then
-                                AuroraUI.Flags[flag]:Set(flagData.Value)
-                            end
-                        end
-                    end
-                end)
-                
-                if success then
-                    AuroraUI.Notify({
-                        Title = "Configuration Loaded",
-                        Content = "Settings loaded successfully.",
-                        Duration = 3,
-                        Theme = theme
-                    })
-                end
-            end
-        end
-        
-        function WindowObject:SaveConfiguration()
-            if not writefile or not makefolder then return end
-            
-            local fileName = configFolder.FileName or "config"
-            local folderName = configFolder.FolderName or "AuroraUI"
-            
-            if not isfolder(folderName) then
-                makefolder(folderName)
-            end
-            
-            local data = {}
-            for flag, flagObj in pairs(AuroraUI.Flags) do
-                if flagObj.CurrentValue ~= nil then
-                    data[flag] = {
-                        Type = "Toggle",
-                        Value = flagObj.CurrentValue
-                    }
-                elseif flagObj.CurrentOption then
-                    data[flag] = {
-                        Type = "Dropdown", 
-                        Value = flagObj.CurrentOption
-                    }
-                end
-            end
-            
-            local success, result = pcall(function()
-                local encoded = HttpService:JSONEncode(data)
-                writefile(folderName .. "/" .. fileName .. ".json", encoded)
-            end)
-            
-            if success then
-                AuroraUI.Notify({
-                    Title = "Configuration Saved",
-                    Content = "Settings saved successfully.",
-                    Duration = 3,
-                    Theme = theme
-                })
-            end
-        end
-        
-        -- Auto-load configuration after a delay
-        task.spawn(function()
-            task.wait(1)
-            WindowObject:LoadConfiguration()
-        end)
     end
     
     -- Entrance animation
     window.Size = UDim2.new(0, 0, 0, 0)
     window.Position = UDim2.new(0.5, 0, 0.5, 0)
-    window.BackgroundTransparency = 1
     
     CreateTween(window, AnimationPresets.Spring, {
         Size = size,
-        Position = UDim2.new(0.5, -size.X.Offset/2, 0.5, -size.Y.Offset/2),
-        BackgroundTransparency = 0
+        Position = UDim2.new(0.5, -size.X.Offset/2, 0.5, -size.Y.Offset/2)
     }):Play()
-    
-    -- Show welcome notification
-    task.spawn(function()
-        task.wait(0.5)
-        AuroraUI.Notify({
-            Title = "Aurora UI Loaded",
-            Content = "Interface initialized successfully.",
-            Duration = 3,
-            Image = "rbxassetid://3926305904",
-            Theme = theme
-        })
-    end)
     
     return WindowObject
-end
-
--- Additional utility functions
-function AuroraUI.CreateConfirmDialog(config)
-    config = config or {}
-    local title = config.Title or "Confirm Action"
-    local message = config.Content or "Are you sure?"
-    local confirmText = config.ConfirmText or "Confirm"
-    local cancelText = config.CancelText or "Cancel"
-    local onConfirm = config.Callback or function() end
-    local theme = config.Theme or AuroraUI.Themes.Default
-    
-    local overlay = CreateInstance("Frame", {
-        Parent = GetScreenGui(),
-        BackgroundColor3 = Color3.new(0, 0, 0),
-        BackgroundTransparency = 0.3,
-        Size = UDim2.new(1, 0, 1, 0),
-        ZIndex = 2000
-    })
-    
-    local dialog = CreateInstance("Frame", {
-        Parent = overlay,
-        BackgroundColor3 = theme.Surface,
-        Position = UDim2.new(0.5, -175, 0.5, -90),
-        Size = UDim2.new(0, 350, 0, 180),
-        BorderSizePixel = 0,
-        ZIndex = 2001
-    })
-    CreateCorner(16).Parent = dialog
-    CreateStroke(theme.Border, 1, 0.3).Parent = dialog
-    CreateShadow(dialog, 25, 0.8)
-    
-    local dialogGradient = CreateGradient({
-        theme.Surface,
-        theme.Surface:lerp(theme.Primary, 0.05)
-    }, 135)
-    dialogGradient.Parent = dialog
-    
-    local titleLabel = CreateInstance("TextLabel", {
-        Parent = dialog,
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, 25, 0, 20),
-        Size = UDim2.new(1, -50, 0, 25),
-        Font = Enum.Font.GothamBold,
-        Text = title,
-        TextColor3 = theme.Text,
-        TextSize = 16,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        TextYAlignment = Enum.TextYAlignment.Center
-    })
-    
-    local messageLabel = CreateInstance("TextLabel", {
-        Parent = dialog,
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, 25, 0, 55),
-        Size = UDim2.new(1, -50, 0, 60),
-        Font = Enum.Font.Gotham,
-        Text = message,
-        TextColor3 = theme.TextDark,
-        TextSize = 14,
-        TextWrapped = true,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        TextYAlignment = Enum.TextYAlignment.Top
-    })
-    
-    local function closeDialog()
-        CreateTween(dialog, AnimationPresets.Fast, {
-            Size = UDim2.new(0, 0, 0, 0),
-            Position = UDim2.new(0.5, 0, 0.5, 0),
-            BackgroundTransparency = 1
-        }):Play()
-        CreateTween(overlay, AnimationPresets.Fast, {BackgroundTransparency = 1}):Play()
-        task.wait(0.25)
-        overlay:Destroy()
-    end
-    
-    local confirmButton = CreateInstance("TextButton", {
-        Parent = dialog,
-        BackgroundColor3 = theme.Primary,
-        Position = UDim2.new(1, -90, 1, -45),
-        Size = UDim2.new(0, 80, 0, 32),
-        Font = Enum.Font.GothamBold,
-        Text = confirmText,
-        TextColor3 = Color3.new(1, 1, 1),
-        TextSize = 13,
-        BorderSizePixel = 0
-    })
-    CreateCorner(8).Parent = confirmButton
-    
-    local confirmGradient = CreateGradient({
-        theme.Primary,
-        theme.Secondary
-    }, 45)
-    confirmGradient.Parent = confirmButton
-    
-    local cancelButton = CreateInstance("TextButton", {
-        Parent = dialog,
-        BackgroundColor3 = theme.Background,
-        Position = UDim2.new(1, -180, 1, -45),
-        Size = UDim2.new(0, 80, 0, 32),
-        Font = Enum.Font.GothamBold,
-        Text = cancelText,
-        TextColor3 = theme.Text,
-        TextSize = 13,
-        BorderSizePixel = 0
-    })
-    CreateCorner(8).Parent = cancelButton
-    CreateStroke(theme.Border, 1, 0.5).Parent = cancelButton
-    
-    confirmButton.MouseEnter:Connect(function()
-        CreateTween(confirmButton, AnimationPresets.Fast, {BackgroundColor3 = theme.Primary:lerp(Color3.new(1, 1, 1), 0.1)}):Play()
-    end)
-    
-    confirmButton.MouseLeave:Connect(function()
-        CreateTween(confirmButton, AnimationPresets.Fast, {BackgroundColor3 = theme.Primary}):Play()
-    end)
-    
-    cancelButton.MouseEnter:Connect(function()
-        CreateTween(cancelButton, AnimationPresets.Fast, {BackgroundColor3 = theme.Surface}):Play()
-    end)
-    
-    cancelButton.MouseLeave:Connect(function()
-        CreateTween(cancelButton, AnimationPresets.Fast, {BackgroundColor3 = theme.Background}):Play()
-    end)
-    
-    confirmButton.MouseButton1Click:Connect(function()
-        closeDialog()
-        onConfirm()
-    end)
-    
-    cancelButton.MouseButton1Click:Connect(function()
-        closeDialog()
-    end)
-    
-    -- Entrance animation
-    dialog.Size = UDim2.new(0, 0, 0, 0)
-    dialog.Position = UDim2.new(0.5, 0, 0.5, 0)
-    dialog.BackgroundTransparency = 1
-    overlay.BackgroundTransparency = 1
-    
-    CreateTween(overlay, AnimationPresets.Fast, {BackgroundTransparency = 0.3}):Play()
-    CreateTween(dialog, AnimationPresets.Spring, {
-        Size = UDim2.new(0, 350, 0, 180),
-        Position = UDim2.new(0.5, -175, 0.5, -90),
-        BackgroundTransparency = 0
-    }):Play()
-end
-
--- Input dialog for text input
-function AuroraUI.CreateInputDialog(config)
-    config = config or {}
-    local title = config.Title or "Input Required"
-    local message = config.Content or "Please enter a value:"
-    local placeholder = config.PlaceholderText or "Enter text..."
-    local confirmText = config.ConfirmText or "Confirm"
-    local cancelText = config.CancelText or "Cancel"
-    local callback = config.Callback or function() end
-    local theme = config.Theme or AuroraUI.Themes.Default
-    
-    local overlay = CreateInstance("Frame", {
-        Parent = GetScreenGui(),
-        BackgroundColor3 = Color3.new(0, 0, 0),
-        BackgroundTransparency = 0.3,
-        Size = UDim2.new(1, 0, 1, 0),
-        ZIndex = 2000
-    })
-    
-    local dialog = CreateInstance("Frame", {
-        Parent = overlay,
-        BackgroundColor3 = theme.Surface,
-        Position = UDim2.new(0.5, -175, 0.5, -100),
-        Size = UDim2.new(0, 350, 0, 200),
-        BorderSizePixel = 0,
-        ZIndex = 2001
-    })
-    CreateCorner(16).Parent = dialog
-    CreateStroke(theme.Border, 1, 0.3).Parent = dialog
-    CreateShadow(dialog, 25, 0.8)
-    
-    local titleLabel = CreateInstance("TextLabel", {
-        Parent = dialog,
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, 25, 0, 20),
-        Size = UDim2.new(1, -50, 0, 25),
-        Font = Enum.Font.GothamBold,
-        Text = title,
-        TextColor3 = theme.Text,
-        TextSize = 16,
-        TextXAlignment = Enum.TextXAlignment.Left
-    })
-    
-    local messageLabel = CreateInstance("TextLabel", {
-        Parent = dialog,
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, 25, 0, 55),
-        Size = UDim2.new(1, -50, 0, 40),
-        Font = Enum.Font.Gotham,
-        Text = message,
-        TextColor3 = theme.TextDark,
-        TextSize = 14,
-        TextWrapped = true,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        TextYAlignment = Enum.TextYAlignment.Top
-    })
-    
-    local inputBox = CreateInstance("TextBox", {
-        Parent = dialog,
-        BackgroundColor3 = theme.Background,
-        Position = UDim2.new(0, 25, 0, 105),
-        Size = UDim2.new(1, -50, 0, 35),
-        BorderSizePixel = 0,
-        Font = Enum.Font.Gotham,
-        PlaceholderText = placeholder,
-        PlaceholderColor3 = theme.TextDark,
-        Text = "",
-        TextColor3 = theme.Text,
-        TextSize = 14,
-        ClearTextOnFocus = false
-    })
-    CreateCorner(8).Parent = inputBox
-    CreateStroke(theme.Border, 1, 0.5).Parent = inputBox
-    
-    CreateInstance("UIPadding", {
-        Parent = inputBox,
-        PaddingLeft = UDim.new(0, 12),
-        PaddingRight = UDim.new(0, 12)
-    })
-    
-    local function closeDialog()
-        CreateTween(dialog, AnimationPresets.Fast, {
-            Size = UDim2.new(0, 0, 0, 0),
-            Position = UDim2.new(0.5, 0, 0.5, 0),
-            BackgroundTransparency = 1
-        }):Play()
-        CreateTween(overlay, AnimationPresets.Fast, {BackgroundTransparency = 1}):Play()
-        task.wait(0.25)
-        overlay:Destroy()
-    end
-    
-    local confirmButton = CreateInstance("TextButton", {
-        Parent = dialog,
-        BackgroundColor3 = theme.Primary,
-        Position = UDim2.new(1, -90, 1, -45),
-        Size = UDim2.new(0, 80, 0, 32),
-        Font = Enum.Font.GothamBold,
-        Text = confirmText,
-        TextColor3 = Color3.new(1, 1, 1),
-        TextSize = 13,
-        BorderSizePixel = 0
-    })
-    CreateCorner(8).Parent = confirmButton
-    
-    local cancelButton = CreateInstance("TextButton", {
-        Parent = dialog,
-        BackgroundColor3 = theme.Background,
-        Position = UDim2.new(1, -180, 1, -45),
-        Size = UDim2.new(0, 80, 0, 32),
-        Font = Enum.Font.GothamBold,
-        Text = cancelText,
-        TextColor3 = theme.Text,
-        TextSize = 13,
-        BorderSizePixel = 0
-    })
-    CreateCorner(8).Parent = cancelButton
-    CreateStroke(theme.Border, 1, 0.5).Parent = cancelButton
-    
-    confirmButton.MouseButton1Click:Connect(function()
-        local text = inputBox.Text
-        closeDialog()
-        callback(text)
-    end)
-    
-    cancelButton.MouseButton1Click:Connect(function()
-        closeDialog()
-    end)
-    
-    inputBox.FocusLost:Connect(function(enterPressed)
-        if enterPressed then
-            local text = inputBox.Text
-            closeDialog()
-            callback(text)
-        end
-    end)
-    
-    -- Focus the input box
-    task.spawn(function()
-        task.wait(0.1)
-        inputBox:CaptureFocus()
-    end)
-    
-    -- Entrance animation
-    dialog.Size = UDim2.new(0, 0, 0, 0)
-    dialog.Position = UDim2.new(0.5, 0, 0.5, 0)
-    dialog.BackgroundTransparency = 1
-    overlay.BackgroundTransparency = 1
-    
-    CreateTween(overlay, AnimationPresets.Fast, {BackgroundTransparency = 0.3}):Play()
-    CreateTween(dialog, AnimationPresets.Spring, {
-        Size = UDim2.new(0, 350, 0, 200),
-        Position = UDim2.new(0.5, -175, 0.5, -100),
-        BackgroundTransparency = 0
-    }):Play()
-end
-
--- Loading function with configuration saving support
-function AuroraUI.LoadConfiguration()
-    for flag, flagData in pairs(AuroraUI.Flags) do
-        if flagData.Set and flagData.CurrentValue ~= nil then
-            flagData:Set(flagData.CurrentValue)
-        elseif flagData.Set and flagData.CurrentOption then
-            flagData:Set(flagData.CurrentOption)
-        end
-    end
 end
 
 return AuroraUI
