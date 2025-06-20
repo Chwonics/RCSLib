@@ -1,128 +1,135 @@
---// FumeUI - Roblox UI Library (Inspired by Fume.gg)
+--// FumeUI - Executor-Friendly Roblox UI Library
 
 local FumeUI = {}
-
-local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 
---// Core UI Setup
+-- Create the main UI window
 function FumeUI:CreateWindow(title)
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "FumeUI"
-    ScreenGui.Parent = CoreGui
-    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "FumeUI_" .. tostring(math.random(1000, 9999))
+    gui.Parent = CoreGui
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    gui.ResetOnSpawn = false
 
-    local Main = Instance.new("Frame")
-    Main.Size = UDim2.new(0, 300, 0, 400)
-    Main.Position = UDim2.new(0.5, -150, 0.5, -200)
-    Main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    Main.BorderSizePixel = 0
-    Main.BackgroundTransparency = 0.1
-    Main.Parent = ScreenGui
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 300, 0, 400)
+    frame.Position = UDim2.new(0.5, -150, 0.5, -200)
+    frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    frame.BorderSizePixel = 0
+    frame.BackgroundTransparency = 0.1
+    frame.Name = title or "FumeUI"
+    frame.Parent = gui
 
-    local UIListLayout = Instance.new("UIListLayout")
-    UIListLayout.Parent = Main
-    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    UIListLayout.Padding = UDim.new(0, 10)
+    local layout = Instance.new("UIListLayout")
+    layout.Padding = UDim.new(0, 10)
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.Parent = frame
 
-    return Main
+    return frame
 end
 
+-- Create a button-style section (title separator)
 function FumeUI:CreateSection(parent, text)
-    local Section = Instance.new("TextButton")
-    Section.Size = UDim2.new(1, -20, 0, 40)
-    Section.Position = UDim2.new(0, 10, 0, 0)
-    Section.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    Section.BorderSizePixel = 0
-    Section.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Section.Text = text
-    Section.Font = Enum.Font.Gotham
-    Section.TextSize = 14
-    Section.AutoButtonColor = false
-    Section.Parent = parent
-    return Section
+    local section = Instance.new("TextButton")
+    section.Size = UDim2.new(1, -20, 0, 40)
+    section.Position = UDim2.new(0, 10, 0, 0)
+    section.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    section.BorderSizePixel = 0
+    section.TextColor3 = Color3.fromRGB(255, 255, 255)
+    section.Font = Enum.Font.Gotham
+    section.TextSize = 14
+    section.Text = text or "Section"
+    section.AutoButtonColor = false
+    section.Parent = parent
+
+    return section
 end
 
+-- Create a toggle button
 function FumeUI:CreateToggle(parent, text, callback)
-    local Toggle = Instance.new("Frame")
-    Toggle.Size = UDim2.new(1, -20, 0, 40)
-    Toggle.BackgroundTransparency = 1
-    Toggle.Parent = parent
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(1, -20, 0, 40)
+    container.BackgroundTransparency = 1
+    container.Parent = parent
 
-    local Label = Instance.new("TextLabel")
-    Label.Text = text
-    Label.Font = Enum.Font.Gotham
-    Label.TextSize = 14
-    Label.TextColor3 = Color3.new(1,1,1)
-    Label.BackgroundTransparency = 1
-    Label.Size = UDim2.new(1, -60, 1, 0)
-    Label.Position = UDim2.new(0, 10, 0, 0)
-    Label.Parent = Toggle
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -60, 1, 0)
+    label.Position = UDim2.new(0, 10, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Font = Enum.Font.Gotham
+    label.TextSize = 14
+    label.TextColor3 = Color3.new(1, 1, 1)
+    label.Text = text or "Toggle"
+    label.Parent = container
 
-    local Button = Instance.new("TextButton")
-    Button.Size = UDim2.new(0, 40, 0, 20)
-    Button.Position = UDim2.new(1, -50, 0.5, -10)
-    Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    Button.Text = ""
-    Button.Parent = Toggle
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(0, 40, 0, 20)
+    button.Position = UDim2.new(1, -50, 0.5, -10)
+    button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    button.Text = ""
+    button.Parent = container
 
-    local Enabled = false
-
-    Button.MouseButton1Click:Connect(function()
-        Enabled = not Enabled
-        Button.BackgroundColor3 = Enabled and Color3.fromRGB(0, 255, 127) or Color3.fromRGB(50, 50, 50)
-        if callback then callback(Enabled) end
+    local state = false
+    button.MouseButton1Click:Connect(function()
+        state = not state
+        button.BackgroundColor3 = state and Color3.fromRGB(0, 255, 127) or Color3.fromRGB(50, 50, 50)
+        if callback then callback(state) end
     end)
+
+    return button
 end
 
+-- Create a dropdown
 function FumeUI:CreateDropdown(parent, title, options, callback)
-    local Frame = Instance.new("Frame")
-    Frame.Size = UDim2.new(1, -20, 0, 40)
-    Frame.BackgroundTransparency = 1
-    Frame.Parent = parent
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(1, -20, 0, 40)
+    container.BackgroundTransparency = 1
+    container.Parent = parent
 
-    local Dropdown = Instance.new("TextButton")
-    Dropdown.Text = title
-    Dropdown.Font = Enum.Font.Gotham
-    Dropdown.TextColor3 = Color3.new(1,1,1)
-    Dropdown.TextSize = 14
-    Dropdown.Size = UDim2.new(1, -20, 1, 0)
-    Dropdown.Position = UDim2.new(0, 10, 0, 0)
-    Dropdown.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    Dropdown.Parent = Frame
+    local dropdown = Instance.new("TextButton")
+    dropdown.Text = title or "Select Option"
+    dropdown.Font = Enum.Font.Gotham
+    dropdown.TextColor3 = Color3.new(1, 1, 1)
+    dropdown.TextSize = 14
+    dropdown.Size = UDim2.new(1, -20, 1, 0)
+    dropdown.Position = UDim2.new(0, 10, 0, 0)
+    dropdown.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    dropdown.Parent = container
 
-    local DropFrame = Instance.new("Frame")
-    DropFrame.Visible = false
-    DropFrame.Size = UDim2.new(1, -20, 0, #options * 30)
-    DropFrame.Position = UDim2.new(0, 10, 0, 40)
-    DropFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    DropFrame.BorderSizePixel = 0
-    DropFrame.Parent = Frame
+    local list = Instance.new("Frame")
+    list.Visible = false
+    list.Size = UDim2.new(1, -20, 0, #options * 30)
+    list.Position = UDim2.new(0, 10, 0, 40)
+    list.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    list.BorderSizePixel = 0
+    list.Parent = container
 
-    local UIList = Instance.new("UIListLayout")
-    UIList.Parent = DropFrame
-    UIList.SortOrder = Enum.SortOrder.LayoutOrder
+    local layout = Instance.new("UIListLayout")
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.Parent = list
 
-    for _, option in ipairs(options) do
-        local OptionBtn = Instance.new("TextButton")
-        OptionBtn.Text = option
-        OptionBtn.Font = Enum.Font.Gotham
-        OptionBtn.TextColor3 = Color3.new(1,1,1)
-        OptionBtn.TextSize = 14
-        OptionBtn.Size = UDim2.new(1, 0, 0, 30)
-        OptionBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-        OptionBtn.Parent = DropFrame
+    for _, opt in ipairs(options) do
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, 0, 0, 30)
+        btn.Text = opt
+        btn.Font = Enum.Font.Gotham
+        btn.TextSize = 14
+        btn.TextColor3 = Color3.new(1, 1, 1)
+        btn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        btn.Parent = list
 
-        OptionBtn.MouseButton1Click:Connect(function()
-            Dropdown.Text = option
-            DropFrame.Visible = false
-            if callback then callback(option) end
+        btn.MouseButton1Click:Connect(function()
+            dropdown.Text = opt
+            list.Visible = false
+            if callback then callback(opt) end
         end)
     end
 
-    Dropdown.MouseButton1Click:Connect(function()
-        DropFrame.Visible = not DropFrame.Visible
+    dropdown.MouseButton1Click:Connect(function()
+        list.Visible = not list.Visible
     end)
+
+    return dropdown
 end
 
 return FumeUI
