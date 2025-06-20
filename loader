@@ -1,165 +1,91 @@
 local FumeUI = {}
 
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
 
-local function MakeDraggable(frame)
-	local dragToggle = nil
-	local dragSpeed = 0.15
+local function makeDraggable(frame)
+	local drag = false
 	local dragInput, dragStart, startPos
-
-	local function updateInput(input)
-		local delta = input.Position - dragStart
-		local pos = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
-			startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-		frame:TweenPosition(pos, Enum.EasingDirection.Out, Enum.EasingStyle.Quad, dragSpeed, true)
-	end
 
 	frame.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragToggle = true
+			drag = true
 			dragStart = input.Position
 			startPos = frame.Position
 
 			input.Changed:Connect(function()
 				if input.UserInputState == Enum.UserInputState.End then
-					dragToggle = false
+					drag = false
 				end
 			end)
 		end
 	end)
 
-	frame.InputChanged:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement then
-			dragInput = input
-		end
-	end)
-
 	UserInputService.InputChanged:Connect(function(input)
-		if input == dragInput and dragToggle then
-			updateInput(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement and drag then
+			local delta = input.Position - dragStart
+			frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 		end
 	end)
 end
 
 function FumeUI:CreateWindow(title)
-	local ScreenGui = Instance.new("ScreenGui", CoreGui)
-	ScreenGui.Name = "FumeUI"
-	ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-	ScreenGui.ResetOnSpawn = false
+	local gui = Instance.new("ScreenGui", CoreGui)
+	gui.Name = "FumeUI"
+	gui.ResetOnSpawn = false
+	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-	local Main = Instance.new("Frame", ScreenGui)
-	Main.Size = UDim2.new(0, 500, 0, 350)
-	Main.Position = UDim2.new(0.5, -250, 0.5, -175)
-	Main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-	Main.BackgroundTransparency = 0.2
-	Main.BorderSizePixel = 0
-	Main.ClipsDescendants = true
-	Main.Active = true
-	Main.Draggable = false
-	Main.Name = "Main"
-	Main.AnchorPoint = Vector2.new(0.5, 0.5)
-	Main.ZIndex = 5
+	local main = Instance.new("Frame", gui)
+	main.Size = UDim2.new(0, 450, 0, 320)
+	main.Position = UDim2.new(0.5, -225, 0.5, -160)
+	main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+	main.BorderSizePixel = 0
+	main.Active = true
+	main.AnchorPoint = Vector2.new(0.5, 0.5)
 
-	local UIStroke = Instance.new("UIStroke", Main)
-	UIStroke.Color = Color3.fromRGB(100, 255, 255)
-	UIStroke.Thickness = 1.5
-	UIStroke.Transparency = 0.25
+	local corner = Instance.new("UICorner", main)
+	corner.CornerRadius = UDim.new(0, 10)
 
-	local UICorner = Instance.new("UICorner", Main)
-	UICorner.CornerRadius = UDim.new(0, 10)
+	local top = Instance.new("TextLabel", main)
+	top.Size = UDim2.new(1, 0, 0, 40)
+	top.BackgroundTransparency = 1
+	top.Text = title or "Fume UI"
+	top.Font = Enum.Font.GothamMedium
+	top.TextSize = 18
+	top.TextColor3 = Color3.new(1, 1, 1)
 
-	MakeDraggable(Main)
+	local content = Instance.new("Frame", main)
+	content.Position = UDim2.new(0, 10, 0, 50)
+	content.Size = UDim2.new(1, -20, 1, -60)
+	content.BackgroundTransparency = 1
 
-	local TopBar = Instance.new("TextLabel", Main)
-	TopBar.Text = title or "Fume UI"
-	TopBar.Size = UDim2.new(1, 0, 0, 40)
-	TopBar.BackgroundTransparency = 1
-	TopBar.Font = Enum.Font.GothamMedium
-	TopBar.TextSize = 18
-	TopBar.TextColor3 = Color3.fromRGB(255, 255, 255)
+	local layout = Instance.new("UIListLayout", content)
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+	layout.Padding = UDim.new(0, 8)
 
-	local TabButtons = Instance.new("Frame", Main)
-	TabButtons.Size = UDim2.new(0, 120, 1, -40)
-	TabButtons.Position = UDim2.new(0, 0, 0, 40)
-	TabButtons.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-	TabButtons.BorderSizePixel = 0
+	makeDraggable(main)
 
-	local UICornerTab = Instance.new("UICorner", TabButtons)
-	UICornerTab.CornerRadius = UDim.new(0, 10)
+	local window = {}
 
-	local UIList = Instance.new("UIListLayout", TabButtons)
-	UIList.SortOrder = Enum.SortOrder.LayoutOrder
-	UIList.Padding = UDim.new(0, 5)
+	function window:Button(text, callback)
+		local button = Instance.new("TextButton", content)
+		button.Size = UDim2.new(1, 0, 0, 32)
+		button.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+		button.Text = text
+		button.TextColor3 = Color3.new(1, 1, 1)
+		button.Font = Enum.Font.Gotham
+		button.TextSize = 14
+		button.BorderSizePixel = 0
 
-	local Pages = Instance.new("Frame", Main)
-	Pages.Position = UDim2.new(0, 120, 0, 40)
-	Pages.Size = UDim2.new(1, -120, 1, -40)
-	Pages.BackgroundTransparency = 1
-	Pages.Name = "Pages"
+		local btnCorner = Instance.new("UICorner", button)
+		btnCorner.CornerRadius = UDim.new(0, 6)
 
-	local tabs = {}
-
-	function FumeUI:CreateTab(tabName)
-		local TabBtn = Instance.new("TextButton", TabButtons)
-		TabBtn.Text = tabName
-		TabBtn.Size = UDim2.new(1, -10, 0, 30)
-		TabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-		TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-		TabBtn.Font = Enum.Font.Gotham
-		TabBtn.TextSize = 14
-		TabBtn.BorderSizePixel = 0
-
-		local UICornerTabBtn = Instance.new("UICorner", TabBtn)
-		UICornerTabBtn.CornerRadius = UDim.new(0, 6)
-
-		local Page = Instance.new("ScrollingFrame", Pages)
-		Page.Name = tabName
-		Page.Size = UDim2.new(1, 0, 1, 0)
-		Page.CanvasSize = UDim2.new(0, 0, 0, 0)
-		Page.BackgroundTransparency = 1
-		Page.Visible = false
-		Page.ScrollBarThickness = 6
-		Page.AutomaticCanvasSize = Enum.AutomaticSize.Y
-
-		local Layout = Instance.new("UIListLayout", Page)
-		Layout.SortOrder = Enum.SortOrder.LayoutOrder
-		Layout.Padding = UDim.new(0, 6)
-
-		tabs[tabName] = Page
-
-		TabBtn.MouseButton1Click:Connect(function()
-			for _, v in pairs(Pages:GetChildren()) do
-				if v:IsA("ScrollingFrame") then
-					v.Visible = false
-				end
-			end
-			Page.Visible = true
+		button.MouseButton1Click:Connect(function()
+			pcall(callback)
 		end)
-
-		return {
-			Button = function(text, callback)
-				local Btn = Instance.new("TextButton", Page)
-				Btn.Size = UDim2.new(1, -10, 0, 36)
-				Btn.Text = text
-				Btn.Font = Enum.Font.GothamMedium
-				Btn.TextSize = 14
-				Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-				Btn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-				Btn.BorderSizePixel = 0
-
-				local BtnCorner = Instance.new("UICorner", Btn)
-				BtnCorner.CornerRadius = UDim.new(0, 6)
-
-				Btn.MouseButton1Click:Connect(function()
-					pcall(callback)
-				end)
-			end
-		}
 	end
 
-	return FumeUI
+	return window
 end
 
 return FumeUI
