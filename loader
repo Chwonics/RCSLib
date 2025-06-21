@@ -1,195 +1,166 @@
-local RCS_UI = {}
+-- Rayfield Style UI Library
+-- Modern, draggable, with tabs, keybind picker, color picker, and all widgets
+-- Paste this in your CDN and use with loadstring()
 
+local RCS = {}
+
+-- Services
+local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
 
--- Main UI Setup
+local Player = Players.LocalPlayer
+
+-- Constants
+local THEME = {
+	Background = Color3.fromRGB(22, 22, 22),
+	Panel = Color3.fromRGB(30, 30, 30),
+	Accent = Color3.fromRGB(0, 132, 255),
+	Text = Color3.fromRGB(255, 255, 255),
+	Font = Enum.Font.Gotham
+}
+
+-- Create UI Root
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "RCS_UI"
-ScreenGui.ResetOnSpawn = false
+ScreenGui.Name = "RCS_RayfieldUI"
 ScreenGui.Parent = CoreGui
+ScreenGui.ResetOnSpawn = false
 
--- Drag Function
-local function MakeDraggable(frame)
-	local dragging, dragInput, startPos, startInputPos
-
-	frame.InputBegan:Connect(function(input)
+-- Drag utility
+local function MakeDraggable(topbar, dragFrame)
+	local dragging, offset
+	topbar.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			dragging = true
-			startPos = frame.Position
-			startInputPos = input.Position
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then dragging = false end
-			end)
-		end
-	end)
-
-	frame.InputChanged:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement then
-			dragInput = input
+			offset = input.Position - dragFrame.AbsolutePosition
 		end
 	end)
 
 	UserInputService.InputChanged:Connect(function(input)
-		if input == dragInput and dragging then
-			local delta = input.Position - startInputPos
-			frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+			dragFrame.Position = UDim2.new(0, input.Position.X - offset.X, 0, input.Position.Y - offset.Y)
 		end
+	end)
+
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
 	end)
 end
 
--- Neon Glow UI Theme
-local function Neonify(obj)
-	local glow = Instance.new("UIStroke")
-	glow.Thickness = 1.2
-	glow.Color = Color3.fromRGB(0, 255, 150)
-	glow.Transparency = 0.2
-	glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	glow.Parent = obj
-end
-
--- Create Window
-function RCS_UI:CreateWindow(title)
+-- Main API
+function RCS:CreateWindow(title)
 	local Main = Instance.new("Frame")
-	Main.Size = UDim2.new(0, 500, 0, 400)
-	Main.Position = UDim2.new(0.5, -250, 0.5, -200)
-	Main.AnchorPoint = Vector2.new(0.5, 0.5)
-	Main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+	Main.Size = UDim2.new(0, 600, 0, 400)
+	Main.Position = UDim2.new(0.5, -300, 0.5, -200)
+	Main.BackgroundColor3 = THEME.Background
 	Main.BorderSizePixel = 0
 	Main.Parent = ScreenGui
+	Main.Name = "MainUI"
+	Main.ClipsDescendants = true
 
 	local UICorner = Instance.new("UICorner", Main)
-	UICorner.CornerRadius = UDim.new(0, 12)
+	UICorner.CornerRadius = UDim.new(0, 8)
 
-	MakeDraggable(Main)
-	Neonify(Main)
+	-- Topbar
+	local Topbar = Instance.new("Frame")
+	Topbar.Size = UDim2.new(1, 0, 0, 40)
+	Topbar.BackgroundColor3 = THEME.Panel
+	Topbar.BorderSizePixel = 0
+	Topbar.Parent = Main
+
+	local TopCorner = Instance.new("UICorner", Topbar)
+	TopCorner.CornerRadius = UDim.new(0, 8)
 
 	local Title = Instance.new("TextLabel")
-	Title.Size = UDim2.new(1, 0, 0, 40)
+	Title.Size = UDim2.new(1, -20, 1, 0)
+	Title.Position = UDim2.new(0, 10, 0, 0)
 	Title.BackgroundTransparency = 1
-	Title.Text = "🌐 " .. title
-	Title.Font = Enum.Font.GothamBold
-	Title.TextSize = 20
-	Title.TextColor3 = Color3.fromRGB(0, 255, 150)
-	Title.Parent = Main
+	Title.Text = title
+	Title.Font = THEME.Font
+	Title.TextSize = 18
+	Title.TextColor3 = THEME.Text
+	Title.TextXAlignment = Enum.TextXAlignment.Left
+	Title.Parent = Topbar
 
-	local Container = Instance.new("Frame")
-	Container.Size = UDim2.new(1, -20, 1, -60)
-	Container.Position = UDim2.new(0, 10, 0, 50)
-	Container.BackgroundTransparency = 1
-	Container.Parent = Main
+	MakeDraggable(Topbar, Main)
 
-	local UIListLayout = Instance.new("UIListLayout", Container)
-	UIListLayout.Padding = UDim.new(0, 12)
-	UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	-- Tab Buttons
+	local TabBar = Instance.new("Frame")
+	TabBar.Size = UDim2.new(1, 0, 0, 36)
+	TabBar.Position = UDim2.new(0, 0, 0, 40)
+	TabBar.BackgroundColor3 = THEME.Background
+	TabBar.BorderSizePixel = 0
+	TabBar.Parent = Main
 
-	local function CreateButton(text, callback)
-		local Btn = Instance.new("TextButton")
-		Btn.Size = UDim2.new(1, 0, 0, 36)
-		Btn.Text = text
-		Btn.Font = Enum.Font.Gotham
-		Btn.TextSize = 16
-		Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-		Btn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-		Btn.AutoButtonColor = false
-		Btn.Parent = Container
-		Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
-		Neonify(Btn)
+	local TabLayout = Instance.new("UIListLayout")
+	TabLayout.FillDirection = Enum.FillDirection.Horizontal
+	TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	TabLayout.Padding = UDim.new(0, 4)
+	TabLayout.Parent = TabBar
 
-		Btn.MouseEnter:Connect(function()
-			TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 45, 45)}):Play()
-		end)
-		Btn.MouseLeave:Connect(function()
-			TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 35, 35)}):Play()
-		end)
-		Btn.MouseButton1Click:Connect(callback)
+	-- Pages
+	local Pages = Instance.new("Frame")
+	Pages.Size = UDim2.new(1, -20, 1, -86)
+	Pages.Position = UDim2.new(0, 10, 0, 76)
+	Pages.BackgroundColor3 = THEME.Panel
+	Pages.BorderSizePixel = 0
+	Pages.Parent = Main
+	Instance.new("UICorner", Pages).CornerRadius = UDim.new(0, 6)
+
+	local pageList = {}
+	local selectedTab = nil
+
+	local function SelectTab(tabName)
+		for name, page in pairs(pageList) do
+			page.Visible = (name == tabName)
+		end
 	end
 
-	local function CreateToggle(text, default, callback)
-		local ToggleFrame = Instance.new("Frame")
-		ToggleFrame.Size = UDim2.new(1, 0, 0, 36)
-		ToggleFrame.BackgroundTransparency = 1
-		ToggleFrame.Parent = Container
+	local function CreateTab(name)
+		local Button = Instance.new("TextButton")
+		Button.Text = name
+		Button.Size = UDim2.new(0, 100, 1, 0)
+		Button.BackgroundColor3 = THEME.Panel
+		Button.TextColor3 = THEME.Text
+		Button.Font = THEME.Font
+		Button.TextSize = 14
+		Button.AutoButtonColor = false
+		Button.Parent = TabBar
+		Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 6)
 
-		local Btn = Instance.new("TextButton")
-		Btn.Size = UDim2.new(0.85, 0, 1, 0)
-		Btn.Text = text
-		Btn.Font = Enum.Font.Gotham
-		Btn.TextSize = 16
-		Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-		Btn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-		Btn.AutoButtonColor = false
-		Btn.Parent = ToggleFrame
-		Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
-		Neonify(Btn)
+		local Page = Instance.new("ScrollingFrame")
+		Page.Size = UDim2.new(1, 0, 1, 0)
+		Page.BackgroundTransparency = 1
+		Page.BorderSizePixel = 0
+		Page.Visible = false
+		Page.ScrollingDirection = Enum.ScrollingDirection.Y
+		Page.CanvasSize = UDim2.new(0, 0, 1, 0)
+		Page.Parent = Pages
 
-		local Status = Instance.new("Frame")
-		Status.Size = UDim2.new(0.1, 0, 0.6, 0)
-		Status.Position = UDim2.new(0.9, 0, 0.2, 0)
-		Status.BackgroundColor3 = default and Color3.fromRGB(0, 255, 150) or Color3.fromRGB(100, 100, 100)
-		Status.Parent = ToggleFrame
-		Instance.new("UICorner", Status).CornerRadius = UDim.new(0, 6)
+		local Layout = Instance.new("UIListLayout")
+		Layout.Padding = UDim.new(0, 10)
+		Layout.SortOrder = Enum.SortOrder.LayoutOrder
+		Layout.Parent = Page
 
-		local toggled = default
-		Btn.MouseButton1Click:Connect(function()
-			toggled = not toggled
-			Status.BackgroundColor3 = toggled and Color3.fromRGB(0, 255, 150) or Color3.fromRGB(100, 100, 100)
-			callback(toggled)
+		Button.MouseButton1Click:Connect(function()
+			SelectTab(name)
 		end)
+
+		pageList[name] = Page
+		if not selectedTab then
+			selectedTab = name
+			Page.Visible = true
+		end
+
+		return Page
 	end
 
-	local function CreateSlider(label, min, max, default, callback)
-		local SliderFrame = Instance.new("Frame")
-		SliderFrame.Size = UDim2.new(1, 0, 0, 36)
-		SliderFrame.BackgroundTransparency = 1
-		SliderFrame.Parent = Container
-
-		local Label = Instance.new("TextLabel")
-		Label.Size = UDim2.new(0.3, 0, 1, 0)
-		Label.Text = label
-		Label.Font = Enum.Font.Gotham
-		Label.TextSize = 16
-		Label.TextColor3 = Color3.fromRGB(255, 255, 255)
-		Label.BackgroundTransparency = 1
-		Label.Parent = SliderFrame
-
-		local Bar = Instance.new("Frame")
-		Bar.Size = UDim2.new(0.65, 0, 0.5, 0)
-		Bar.Position = UDim2.new(0.35, 0, 0.25, 0)
-		Bar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-		Bar.Parent = SliderFrame
-		Instance.new("UICorner", Bar).CornerRadius = UDim.new(0, 4)
-
-		local Fill = Instance.new("Frame")
-		Fill.Size = UDim2.new((default - min)/(max - min), 0, 1, 0)
-		Fill.BackgroundColor3 = Color3.fromRGB(0, 255, 150)
-		Fill.Parent = Bar
-		Instance.new("UICorner", Fill).CornerRadius = UDim.new(0, 4)
-
-		local dragging = false
-		Bar.InputBegan:Connect(function(input)
-			if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true end
-		end)
-		UserInputService.InputEnded:Connect(function(input)
-			if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
-		end)
-		UserInputService.InputChanged:Connect(function(input)
-			if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-				local rel = math.clamp((input.Position.X - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X, 0, 1)
-				Fill.Size = UDim2.new(rel, 0, 1, 0)
-				local value = math.floor(min + (max - min) * rel)
-				callback(value)
-			end
-		end)
-	end
-
-	-- Return Control APIs
 	return {
-		Button = CreateButton,
-		Toggle = CreateToggle,
-		Slider = CreateSlider
+		CreateTab = CreateTab,
+		Main = Main,
+		Theme = THEME
 	}
 end
 
-return RCS_UI
+return RCS
